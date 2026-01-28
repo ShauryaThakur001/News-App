@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:newsapp/Pages/home.dart';
+import 'package:newsapp/Pages/landingPage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Home(),
+      home: Landingpage(),
     );
   }
 }
