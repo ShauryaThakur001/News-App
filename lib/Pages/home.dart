@@ -1,8 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:newsapp/Models/articleModel.dart';
 import 'package:newsapp/Models/catergoryModel.dart';
 import 'package:newsapp/Models/slider_model.dart';
 import 'package:newsapp/Services/data.dart';
+import 'package:newsapp/Services/news.dart';
 import 'package:newsapp/Services/slider_data.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -16,14 +19,25 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<CatergoryModel> categories = [];
   List<SliderModel> sliders = [];
+  List<ArticleModel> articles = [];
 
+  bool isLoading = true;
   int activeIndex = 0;
 
   @override
   void initState() {
+    super.initState();
     categories = getCategories();
     sliders = getSliders();
-    super.initState();
+    fetchNews();
+  }
+
+  Future<void> fetchNews() async {
+    News newsClass = News();
+    articles = await newsClass.getNews();
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -32,291 +46,111 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         elevation: 0,
         centerTitle: true,
-        title: Row(
+        title: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("Flutter"),
             Text(
               "News",
-              style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.teal,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                margin: EdgeInsets.only(left: 10),
-                height: 70,
-                child: ListView.builder(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              children: [
+                // 🔹 Categories
+                SizedBox(
+                  height: 70,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(left: 10),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      return CategoryTile(
+                        image: categories[index].image!,
+                        categoryName: categories[index].categoryName!,
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 🔹 Breaking News Title
+                sectionHeader("Breaking News!"),
+
+                // 🔹 Carousel Slider
+                CarouselSlider.builder(
+                  itemCount: sliders.length,
+                  itemBuilder: (context, index, realIndex) {
+                    final slider = sliders[index];
+                    return buildSlider(slider.image!, slider.name!);
+                  },
+                  options: CarouselOptions(
+                    height: 250,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                    onPageChanged: (index, reason) {
+                      setState(() {
+                        activeIndex = index;
+                      });
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+                Center(child: buildIndicator()),
+
+                const SizedBox(height: 20),
+
+                // 🔹 Trending News Title
+                sectionHeader("Trending News!"),
+
+                // 🔹 News List
+                ListView.builder(
                   shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: articles.length,
                   itemBuilder: (context, index) {
-                    return CategoryTile(
-                      image: categories[index].image,
-                      CategoryName: categories[index].categoryName,
+                    final article = articles[index];
+
+                    return BlogTile(
+                      imageUrl: article.urlToImage ?? "",
+                      title: article.title ?? "No Title",
+                      desc: article.description ?? "",
                     );
                   },
                 ),
-              ),
-              SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(left: 15, right: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Breaking News!",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Text(
-                      "View All",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 30),
-              CarouselSlider.builder(
-                itemCount: sliders.length,
-                itemBuilder: (context, index, realIndex) {
-                  final res = sliders[index];
-                  return buildImage(res.image!, index, res.name!);
-                },
-                options: CarouselOptions(
-                  height: 250,
-                  autoPlay: true,
-                  enlargeStrategy: CenterPageEnlargeStrategy.height,
-                  enlargeCenterPage: true,
-                  onPageChanged: (index, reason) {
-                    setState(() {
-                      activeIndex = index;
-                    });
-                  },
-                ),
-              ),
-              SizedBox(height: 10),
-              Center(child: buildIndicator()),
-              Padding(
-                padding: const EdgeInsets.all(15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Trending News!",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Text(
-                      "View All",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Material(
-                  elevation: 3,
-                  borderRadius: BorderRadius.circular(10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Container(
-                          child: ClipRRect(
-                            borderRadius: BorderRadiusGeometry.circular(10),
-                            child: Image.asset(
-                              "assets/images/science2.jpg",
-                              fit: BoxFit.cover,
-                              width: 150,
-                              height: 150,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 15,),
-                      Column(
-                        children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width/2,
-                            child: Column(
-                              children: [
-                                Text("Lorem Ipsum is siived not onlelectronic typesetting, remaining",style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500
-                                ),),
-                                SizedBox(height: 3,),
-                                Text("The value is siived not onlelectronic typesetting, remaining. Lorem Ipsum is siived not valid.",style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500
-                                ),),
-                              ],
-                            )),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Material(
-                  elevation: 3,
-                  borderRadius: BorderRadius.circular(10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Container(
-                          child: ClipRRect(
-                            borderRadius: BorderRadiusGeometry.circular(10),
-                            child: Image.asset(
-                              "assets/images/science3.jpg",
-                              fit: BoxFit.cover,
-                              width: 150,
-                              height: 150,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 15,),
-                      Column(
-                        children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width/2,
-                            child: Column(
-                              children: [
-                                Text("Lorem Ipsum is siived not onlelectronic typesetting, remaining",style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500
-                                ),),
-                                SizedBox(height: 3,),
-                                Text("The value is siived not onlelectronic typesetting, remaining. Lorem Ipsum is siived not valid.",style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500
-                                ),),
-                              ],
-                            )),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Material(
-                  elevation: 3,
-                  borderRadius: BorderRadius.circular(10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Container(
-                          child: ClipRRect(
-                            borderRadius: BorderRadiusGeometry.circular(10),
-                            child: Image.asset(
-                              "assets/images/science.jpg",
-                              fit: BoxFit.cover,
-                              width: 150,
-                              height: 150,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 15,),
-                      Column(
-                        children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width/2,
-                            child: Column(
-                              children: [
-                                Text("Lorem Ipsum is siived not onlelectronic typesetting, remaining",style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500
-                                ),),
-                                SizedBox(height: 3,),
-                                Text("The value is siived not onlelectronic typesetting, remaining. Lorem Ipsum is siived not valid.",style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500
-                                ),),
-                              ],
-                            )),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-
-              SizedBox(height: 300,)
-            ],
-          ),
-        ),
-      ),
+              ],
+            ),
     );
   }
 
-  Widget buildImage(String image, int index, String name) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10),
-      child: Stack(
+  // 🔹 Section Header Widget
+  Widget sectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadiusGeometry.circular(10),
-            child: Image.asset(
-              image,
-              fit: BoxFit.cover,
-              height: 250,
-              width: MediaQuery.of(context).size.width,
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
             ),
           ),
-          Container(
-            height: 250,
-            margin: EdgeInsets.only(top: 170),
-            padding: EdgeInsets.only(left: 25),
-            width: MediaQuery.of(context).size.width,
-            decoration: BoxDecoration(
-              color: Colors.black38,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10),
-              ),
-            ),
-            child: Text(
-              name,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+          const Text(
+            "View All",
+            style: TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -324,34 +158,77 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget buildIndicator() {
-    return Container(
-      child: AnimatedSmoothIndicator(
-        activeIndex: activeIndex,
-        count: sliders.length,
-        effect: JumpingDotEffect(
-          dotWidth: 13,
-          dotHeight: 13,
-          activeDotColor: Colors.teal,
+  // 🔹 Slider Widget
+  Widget buildSlider(String image, String title) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.asset(
+            image,
+            fit: BoxFit.cover,
+            width: double.infinity,
+          ),
         ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.all(15),
+            decoration: const BoxDecoration(
+              color: Colors.black38,
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(10),
+              ),
+            ),
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 🔹 Indicator
+  Widget buildIndicator() {
+    return AnimatedSmoothIndicator(
+      activeIndex: activeIndex,
+      count: sliders.length,
+      effect: const JumpingDotEffect(
+        dotWidth: 13,
+        dotHeight: 13,
+        activeDotColor: Colors.teal,
       ),
     );
   }
 }
 
+// 🔹 Category Tile
 class CategoryTile extends StatelessWidget {
-  final image;
-  final CategoryName;
-  const CategoryTile({super.key, this.image, this.CategoryName});
+  final String image;
+  final String categoryName;
+
+  const CategoryTile({
+    super.key,
+    required this.image,
+    required this.categoryName,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(right: 16),
+      margin: const EdgeInsets.only(right: 16),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadiusGeometry.circular(6),
+            borderRadius: BorderRadius.circular(6),
             child: Image.asset(
               image,
               width: 120,
@@ -361,23 +238,95 @@ class CategoryTile extends StatelessWidget {
           ),
           Container(
             width: 120,
-            height: 70,
+            height: 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(6),
               color: Colors.black38,
             ),
             child: Center(
               child: Text(
-                CategoryName,
-                style: TextStyle(
+                categoryName,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 15,
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// 🔹 Blog Tile
+class BlogTile extends StatelessWidget {
+  final String imageUrl;
+  final String title;
+  final String desc;
+
+  const BlogTile({
+    super.key,
+    required this.imageUrl,
+    required this.title,
+    required this.desc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: Material(
+        elevation: 3,
+        borderRadius: BorderRadius.circular(10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                width: 150,
+                height: 150,
+                fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                    const Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) =>
+                    const Icon(Icons.image_not_supported),
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10, right: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      desc,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
