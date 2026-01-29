@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:newsapp/Pages/home.dart';
 import 'package:newsapp/Pages/landingPage.dart';
 
 void main() {
