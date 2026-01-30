@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:newsapp/Models/articleModel.dart';
 import 'package:newsapp/Models/catergoryModel.dart';
 import 'package:newsapp/Models/slider_model.dart';
+import 'package:newsapp/Pages/article_view.dart';
 import 'package:newsapp/Services/data.dart';
 import 'package:newsapp/Services/news.dart';
 import 'package:newsapp/Services/slider_data.dart';
@@ -121,6 +122,7 @@ class _HomeState extends State<Home> {
                     final article = articles[index];
 
                     return BlogTile(
+                      url: article.url??"",
                       imageUrl: article.urlToImage ?? "",
                       title: article.title ?? "No Title",
                       desc: article.description ?? "",
@@ -264,68 +266,77 @@ class BlogTile extends StatelessWidget {
   final String imageUrl;
   final String title;
   final String desc;
+  final String url;
 
   const BlogTile({
     super.key,
     required this.imageUrl,
     required this.title,
     required this.desc,
+    required this.url,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      child: Material(
-        elevation: 3,
-        borderRadius: BorderRadius.circular(10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                width: 150,
-                height: 150,
-                fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    const Center(child: CircularProgressIndicator()),
-                errorWidget: (context, url, error) =>
-                    const Icon(Icons.image_not_supported),
-              ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10, right: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      desc,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>ArticleView(blogUrl: url)));
+      },
+      child: Container(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Material(
+            elevation: 3,
+            borderRadius: BorderRadius.circular(10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.image_not_supported),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10, right: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          desc,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
