@@ -1,28 +1,38 @@
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:newsapp/Models/articleModel.dart';
 import 'package:newsapp/Models/slider_model.dart';
 
-List<SliderModel>getSliders(){
+class Sliderssss {
+  List<SliderModel> sliders = [];
 
-  List<SliderModel>slider=[];
-  SliderModel catergoryModel = SliderModel();
+  Future<List<SliderModel>> getSliders() async {
+    const String url =
+        "https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=e7906ecf1da5434da9727af56c6ee6b4https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=e7906ecf1da5434da9727af56c6ee6b4";
 
-  catergoryModel.name="Bow to the Authority of Salienforce";
-  catergoryModel.image="assets/images/buisness.jpg";
-  slider.add(catergoryModel);
-  catergoryModel=new SliderModel();
+    final response = await http.get(Uri.parse(url));
 
-  catergoryModel.name="Bow to the Authority of Salienforce";
-  catergoryModel.image="assets/images/entertainment.jpg";
-  slider.add(catergoryModel);
-  catergoryModel=new SliderModel();
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
 
+      for (var element in jsonData["articles"]) {
+        if (element["urlToImage"] != null &&element["description"] != null) {
+          SliderModel sliderModel= SliderModel(
+            author: element["author"],
+            title: element["title"],
+            description: element["description"],
+            url: element["url"],
+            urlToImage: element["urlToImage"],
+            content: element["content"],
+          );
 
+          sliders.add(sliderModel);
+        }
+      }
 
-  catergoryModel.name="Bow to the Authority of Salienforce";
-  catergoryModel.image="assets/images/health.jpg";
-  slider.add(catergoryModel);
-  catergoryModel=new SliderModel();
-
-
-  return slider;
+      return sliders;
+    } else {
+      throw Exception("Failed to load news");
+    }
+  }
 }

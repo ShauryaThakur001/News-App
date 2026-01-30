@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     categories = getCategories();
-    sliders = getSliders();
+    getSliders();
     fetchNews();
   }
 
@@ -39,6 +39,12 @@ class _HomeState extends State<Home> {
     setState(() {
       isLoading = false;
     });
+  }
+
+  Future<void> getSliders() async {
+    Sliderssss slider = Sliderssss();
+    sliders = slider.sliders;
+
   }
 
   @override
@@ -91,7 +97,10 @@ class _HomeState extends State<Home> {
                   itemCount: sliders.length,
                   itemBuilder: (context, index, realIndex) {
                     final slider = sliders[index];
-                    return buildSlider(slider.image!, slider.name!);
+                    return buildSlider(
+                      slider.image!, 
+                      slider.name!
+                      );
                   },
                   options: CarouselOptions(
                     height: 250,
