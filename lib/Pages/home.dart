@@ -19,8 +19,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<CatergoryModel> categories = [];
-  List<SliderModel> sliders = [];
   List<ArticleModel> articles = [];
+  List<SliderModel> sliders = [];
 
   bool isLoading = true;
   int activeIndex = 0;
@@ -29,29 +29,25 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     categories = getCategories();
-    getSliders();
-    fetchNews();
+    loadAllData();
   }
 
-  Future<void> fetchNews() async {
-    News newsClass = News();
-    articles = await newsClass.getNews();
+  Future<void> loadAllData() async {
+    final newsService = News();
+    final sliderService = Sliderssss();
+
+    articles = await newsService.getNews();
+    sliders = await sliderService.getSliders();
+
     setState(() {
       isLoading = false;
     });
-  }
-
-  Future<void> getSliders() async {
-    Sliderssss slider = Sliderssss();
-    sliders = slider.sliders;
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0,
         centerTitle: true,
         title: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -68,10 +64,10 @@ class _HomeState extends State<Home> {
         ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: [
-                // 🔹 Categories
+                // ================= CATEGORIES =================
                 SizedBox(
                   height: 70,
                   child: ListView.builder(
@@ -89,27 +85,24 @@ class _HomeState extends State<Home> {
 
                 const SizedBox(height: 20),
 
-                // 🔹 Breaking News Title
-                sectionHeader("Breaking News!"),
+                sectionHeader("Breaking News"),
 
-                // 🔹 Carousel Slider
+                // ================= BREAKING NEWS SLIDER =================
                 CarouselSlider.builder(
                   itemCount: sliders.length,
                   itemBuilder: (context, index, realIndex) {
                     final slider = sliders[index];
                     return buildSlider(
-                      slider.image!, 
-                      slider.name!
-                      );
+                      slider.urlToImage!,
+                      slider.title!,
+                    );
                   },
                   options: CarouselOptions(
                     height: 250,
                     autoPlay: true,
                     enlargeCenterPage: true,
                     onPageChanged: (index, reason) {
-                      setState(() {
-                        activeIndex = index;
-                      });
+                      setState(() => activeIndex = index);
                     },
                   ),
                 ),
@@ -119,22 +112,20 @@ class _HomeState extends State<Home> {
 
                 const SizedBox(height: 20),
 
-                // 🔹 Trending News Title
-                sectionHeader("Trending News!"),
+                sectionHeader("Trending News"),
 
-                // 🔹 News List
+                // ================= TRENDING NEWS LIST =================
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: articles.length,
                   itemBuilder: (context, index) {
                     final article = articles[index];
-
                     return BlogTile(
-                      url: article.url??"",
                       imageUrl: article.urlToImage ?? "",
-                      title: article.title ?? "No Title",
+                      title: article.title ?? "No title",
                       desc: article.description ?? "",
+                      url: article.url ?? "",
                     );
                   },
                 ),
@@ -143,7 +134,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // 🔹 Section Header Widget
+  // ================= SECTION HEADER =================
   Widget sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
@@ -159,24 +150,21 @@ class _HomeState extends State<Home> {
           ),
           const Text(
             "View All",
-            style: TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: Colors.blue),
           ),
         ],
       ),
     );
   }
 
-  // 🔹 Slider Widget
+  // ================= SLIDER ITEM =================
   Widget buildSlider(String image, String title) {
     return Stack(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.asset(
-            image,
+          child: CachedNetworkImage(
+            imageUrl: image,
             fit: BoxFit.cover,
             width: double.infinity,
           ),
@@ -188,13 +176,15 @@ class _HomeState extends State<Home> {
           child: Container(
             padding: const EdgeInsets.all(15),
             decoration: const BoxDecoration(
-              color: Colors.black38,
+              color: Colors.black45,
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(10),
               ),
             ),
             child: Text(
               title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -207,21 +197,21 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // 🔹 Indicator
+  // ================= INDICATOR =================
   Widget buildIndicator() {
     return AnimatedSmoothIndicator(
       activeIndex: activeIndex,
       count: sliders.length,
       effect: const JumpingDotEffect(
-        dotWidth: 13,
-        dotHeight: 13,
+        dotHeight: 12,
+        dotWidth: 12,
         activeDotColor: Colors.teal,
       ),
     );
   }
 }
 
-// 🔹 Category Tile
+// ================= CATEGORY TILE =================
 class CategoryTile extends StatelessWidget {
   final String image;
   final String categoryName;
@@ -270,7 +260,7 @@ class CategoryTile extends StatelessWidget {
   }
 }
 
-// 🔹 Blog Tile
+// ================= BLOG TILE =================
 class BlogTile extends StatelessWidget {
   final String imageUrl;
   final String title;
@@ -289,62 +279,63 @@ class BlogTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>ArticleView(blogUrl: url)));
-      },
-      child: Container(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: Material(
-            elevation: 3,
-            borderRadius: BorderRadius.circular(10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    width: 150,
-                    height: 150,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                        const Center(child: CircularProgressIndicator()),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.image_not_supported),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 10, right: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          desc,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+        if (url.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ArticleView(blogUrl: url),
             ),
+          );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: Material(
+          elevation: 3,
+          borderRadius: BorderRadius.circular(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  width: 140,
+                  height: 140,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.broken_image),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10, right: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        desc,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
