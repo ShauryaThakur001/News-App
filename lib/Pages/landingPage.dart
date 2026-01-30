@@ -40,30 +40,32 @@ class _LandingpageState extends State<Landingpage> {
               fontWeight: FontWeight.w500
             ),),
             SizedBox(height: 60,),
-            Container(
-              width:MediaQuery.of(context).size.width/1.2 ,
-              child: Material(
-                elevation: 5,
-                borderRadius: BorderRadius.circular(30),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                  width:MediaQuery.of(context).size.width/1.2 ,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    color: Colors.blue,
-                  ),
-                  child: Center(
-                    child: TextButton(onPressed: (){
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Home()));
-                    }, child: Text("Get Started",style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold
-                    ),),)
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Home()));
+              },
+              child: Container(
+                width:MediaQuery.of(context).size.width/1.2 ,
+                child: Material(
+                  elevation: 5,
+                  borderRadius: BorderRadius.circular(30),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    width:MediaQuery.of(context).size.width/2 ,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: Colors.blue,
+                    ),
+                    child: Center(
+                      child:Text("Get Started",style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold
+                      ),),)
+                    ),
                   ),
                 ),
-              ),
-            )
+            ),
           ],
         ),
       ),

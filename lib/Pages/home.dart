@@ -201,7 +201,7 @@ class _HomeState extends State<Home> {
   Widget buildIndicator() {
     return AnimatedSmoothIndicator(
       activeIndex: activeIndex,
-      count: sliders.length,
+      count: 5,
       effect: const JumpingDotEffect(
         dotHeight: 12,
         dotWidth: 12,
