@@ -22,7 +22,7 @@ class _CategoryNewsState extends State<CategoryNews> {
     sliders = await sliderService.getSliders();
 
     setState(() {
-      isLoading = false;
+      isLoadin = false;
     });
   }
     
