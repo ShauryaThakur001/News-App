@@ -24,7 +24,7 @@ class Sliderssss {
               description: element["description"],
               url: element["url"],
               urlToImage: element["urlToImage"],
-              content: element["content"],
+              content: element["conten"],
             ),
           );
         }
