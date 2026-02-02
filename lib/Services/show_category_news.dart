@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:newsapp/Models/ShowCategory.dart';
-import 'package:newsapp/Models/catergoryModel.dart';
-import 'package:newsapp/Models/slider_model.dart';
 
 class ShowCategoryNews {
+  List<ShowCatergoryModel> categoryNews = [];
 
-  List<ShowCatergoryModel>CategoryNews=[];
-  
-  Future<List<ShowCatergoryModel>> getCategoryNews(String Category) async {
+  Future<List<ShowCatergoryModel>> getCategoryNews(String category) async {
+    categoryNews.clear(); // IMPORTANT
+
     final String url =
-        "https://newsapi.org/v2/top-headlines?country=us&category=$Category&apiKey=e7906ecf1da5434da9727af56c6ee6b4";
+        "https://newsapi.org/v2/top-headlines?country=us&category=$category&apiKey=e7906ecf1da5434da9727af56c6ee6b4";
 
     final response = await http.get(Uri.parse(url));
 
@@ -20,7 +19,7 @@ class ShowCategoryNews {
       for (var element in jsonData["articles"]) {
         if (element["urlToImage"] != null &&
             element["description"] != null) {
-          CategoryNews.add(
+          categoryNews.add(
             ShowCatergoryModel(
               author: element["author"],
               title: element["title"],
@@ -33,9 +32,9 @@ class ShowCategoryNews {
         }
       }
 
-      return CategoryNews;
+      return categoryNews;
     } else {
-      throw Exception("Failed to load breaking news");
+      throw Exception("Failed to load category news");
     }
   }
 }

@@ -115,19 +115,21 @@ class _HomeState extends State<Home> {
                 sectionHeader("Trending News"),
 
                 // ================= TRENDING NEWS LIST =================
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: articles.length,
-                  itemBuilder: (context, index) {
-                    final article = articles[index];
-                    return BlogTile(
-                      imageUrl: article.urlToImage ?? "",
-                      title: article.title ?? "No title",
-                      desc: article.description ?? "",
-                      url: article.url ?? "",
-                    );
-                  },
+                Container(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: articles.length,
+                    itemBuilder: (context, index) {
+                      final article = articles[index];
+                      return BlogTile(
+                        imageUrl: article.urlToImage ?? "",
+                        title: article.title ?? "No title",
+                        desc: article.description ?? "",
+                        url: article.url ?? "",
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
