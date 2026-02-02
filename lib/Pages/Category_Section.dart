@@ -35,11 +35,11 @@ class _CategoryNewsState extends State<CategoryNews> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text(
-          "News",
-          style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+        title: Text(
+          widget.name.toUpperCase(),
+          style: const TextStyle(color: Colors.teal),
         ),
+        centerTitle: true,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -73,25 +73,27 @@ class ShowCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CachedNetworkImage(
-            width: MediaQuery.of(context).size.width,
+            imageUrl: imageUrl,
+            width: double.infinity,
             height: 200,
             fit: BoxFit.cover,
-            imageUrl: imageUrl,
             placeholder: (context, url) =>
                 const Center(child: CircularProgressIndicator()),
-            errorWidget: (context, url, error) =>
-                const Icon(Icons.error),
+            errorWidget: (context, url, error) => Image.asset(
+              "assets/images/news_placeholder.png",
+              fit: BoxFit.cover,
+            ),
           ),
+
           const SizedBox(height: 8),
           Text(
             title,
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 5),
           Text(desc),

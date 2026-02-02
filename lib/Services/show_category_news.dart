@@ -6,7 +6,7 @@ class ShowCategoryNews {
   List<ShowCatergoryModel> categoryNews = [];
 
   Future<List<ShowCatergoryModel>> getCategoryNews(String category) async {
-    categoryNews.clear(); // IMPORTANT
+    categoryNews.clear();
 
     final String url =
         "https://newsapi.org/v2/top-headlines?country=us&category=$category&apiKey=e7906ecf1da5434da9727af56c6ee6b4";
@@ -17,7 +17,10 @@ class ShowCategoryNews {
       final jsonData = jsonDecode(response.body);
 
       for (var element in jsonData["articles"]) {
-        if (element["urlToImage"] != null &&
+        final imageUrl = element["urlToImage"];
+
+        if (imageUrl != null &&
+            imageUrl.toString().startsWith("http") &&
             element["description"] != null) {
           categoryNews.add(
             ShowCatergoryModel(

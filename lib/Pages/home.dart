@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:newsapp/Models/articleModel.dart';
 import 'package:newsapp/Models/catergoryModel.dart';
 import 'package:newsapp/Models/slider_model.dart';
+import 'package:newsapp/Pages/Category_Section.dart';
 import 'package:newsapp/Pages/article_view.dart';
 import 'package:newsapp/Services/data.dart';
 import 'package:newsapp/Services/news.dart';
@@ -55,10 +56,7 @@ class _HomeState extends State<Home> {
             Text("Flutter"),
             Text(
               "News",
-              style: TextStyle(
-                color: Colors.teal,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -75,9 +73,10 @@ class _HomeState extends State<Home> {
                     scrollDirection: Axis.horizontal,
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
+                      final category = categories[index];
                       return CategoryTile(
-                        image: categories[index].image!,
-                        categoryName: categories[index].categoryName!,
+                        image: category.image!,
+                        categoryName: category.categoryName!,
                       );
                     },
                   ),
@@ -87,7 +86,7 @@ class _HomeState extends State<Home> {
 
                 sectionHeader("Breaking News"),
 
-                // ================= BREAKING NEWS SLIDER =================
+                // ================= SLIDER =================
                 CarouselSlider.builder(
                   itemCount: sliders.length,
                   itemBuilder: (context, index, realIndex) {
@@ -114,22 +113,20 @@ class _HomeState extends State<Home> {
 
                 sectionHeader("Trending News"),
 
-                // ================= TRENDING NEWS LIST =================
-                Container(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: articles.length,
-                    itemBuilder: (context, index) {
-                      final article = articles[index];
-                      return BlogTile(
-                        imageUrl: article.urlToImage ?? "",
-                        title: article.title ?? "No title",
-                        desc: article.description ?? "",
-                        url: article.url ?? "",
-                      );
-                    },
-                  ),
+                // ================= TRENDING LIST =================
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: articles.length,
+                  itemBuilder: (context, index) {
+                    final article = articles[index];
+                    return BlogTile(
+                      imageUrl: article.urlToImage ?? "",
+                      title: article.title ?? "No title",
+                      desc: article.description ?? "",
+                      url: article.url ?? "",
+                    );
+                  },
                 ),
               ],
             ),
@@ -140,21 +137,12 @@ class _HomeState extends State<Home> {
   Widget sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const Text(
-            "View All",
-            style: TextStyle(color: Colors.blue),
-          ),
-        ],
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+        ),
       ),
     );
   }
@@ -177,12 +165,7 @@ class _HomeState extends State<Home> {
           right: 0,
           child: Container(
             padding: const EdgeInsets.all(15),
-            decoration: const BoxDecoration(
-              color: Colors.black45,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(10),
-              ),
-            ),
+            color: Colors.black45,
             child: Text(
               title,
               maxLines: 2,
@@ -203,7 +186,7 @@ class _HomeState extends State<Home> {
   Widget buildIndicator() {
     return AnimatedSmoothIndicator(
       activeIndex: activeIndex,
-      count: 5,
+      count: sliders.length,
       effect: const JumpingDotEffect(
         dotHeight: 12,
         dotWidth: 12,
@@ -226,37 +209,49 @@ class CategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16),
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset(
-              image,
-              width: 120,
-              height: 60,
-              fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CategoryNews(
+              name: categoryName.toLowerCase(), // API expects lowercase
             ),
           ),
-          Container(
-            width: 120,
-            height: 60,
-            decoration: BoxDecoration(
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 16),
+        child: Stack(
+          children: [
+            ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              color: Colors.black38,
+              child: Image.asset(
+                image,
+                width: 120,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
             ),
-            child: Center(
-              child: Text(
-                categoryName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+            Container(
+              width: 120,
+              height: 60,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                color: Colors.black38,
+              ),
+              child: Center(
+                child: Text(
+                  categoryName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
