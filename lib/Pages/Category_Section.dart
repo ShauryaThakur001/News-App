@@ -44,6 +44,8 @@ class _CategoryNewsState extends State<CategoryNews> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
+            shrinkWrap: true,
+            physics: ClampingScrollPhysics(),
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final article = categories[index];

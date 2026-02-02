@@ -5,6 +5,7 @@ import 'package:newsapp/Models/articleModel.dart';
 import 'package:newsapp/Models/catergoryModel.dart';
 import 'package:newsapp/Models/slider_model.dart';
 import 'package:newsapp/Pages/Category_Section.dart';
+import 'package:newsapp/Pages/all_news.dart';
 import 'package:newsapp/Pages/article_view.dart';
 import 'package:newsapp/Services/data.dart';
 import 'package:newsapp/Services/news.dart';
@@ -34,8 +35,8 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> loadAllData() async {
-    final newsService = News();
-    final sliderService = Sliderssss();
+    News newsService = News();
+    Sliderssss sliderService = Sliderssss();
 
     articles = await newsService.getNews();
     sliders = await sliderService.getSliders();
@@ -84,9 +85,9 @@ class _HomeState extends State<Home> {
 
                 const SizedBox(height: 20),
 
-                sectionHeader("Breaking News"),
+                // ================= BREAKING NEWS =================
+                sectionHeader("Breaking News", context),
 
-                // ================= SLIDER =================
                 CarouselSlider.builder(
                   itemCount: sliders.length,
                   itemBuilder: (context, index, realIndex) {
@@ -111,9 +112,9 @@ class _HomeState extends State<Home> {
 
                 const SizedBox(height: 20),
 
-                sectionHeader("Trending News"),
+                // ================= TRENDING NEWS =================
+                sectionHeader("Trending News", context),
 
-                // ================= TRENDING LIST =================
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -133,21 +134,34 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // ================= SECTION HEADER =================
-  Widget sectionHeader(String title) {
+  // ================= HEADER WITH VIEW ALL =================
+  Widget sectionHeader(String title, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AllNews(news: title),
+                ),
+              );
+            },
+            child: const Text("View All"),
+          ),
+        ],
       ),
     );
   }
 
-  // ================= SLIDER ITEM =================
+  // ================= SLIDER =================
   Widget buildSlider(String image, String title) {
     return Stack(
       children: [
@@ -196,7 +210,6 @@ class _HomeState extends State<Home> {
   }
 }
 
-// ================= CATEGORY TILE =================
 class CategoryTile extends StatelessWidget {
   final String image;
   final String categoryName;
@@ -215,7 +228,7 @@ class CategoryTile extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => CategoryNews(
-              name: categoryName.toLowerCase(), // API expects lowercase
+              name: categoryName.toLowerCase(),
             ),
           ),
         );
@@ -257,7 +270,7 @@ class CategoryTile extends StatelessWidget {
   }
 }
 
-// ================= BLOG TILE =================
+
 class BlogTile extends StatelessWidget {
   final String imageUrl;
   final String title;
@@ -276,14 +289,14 @@ class BlogTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (url.isNotEmpty) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ArticleView(blogUrl: url),
-            ),
-          );
-        }
+        if (url.isEmpty || !url.startsWith("http")) return;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ArticleView(blogUrl: url),
+          ),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -339,3 +352,4 @@ class BlogTile extends StatelessWidget {
     );
   }
 }
+
